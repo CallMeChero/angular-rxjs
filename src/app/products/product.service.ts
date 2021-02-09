@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { combineLatest, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Product } from './product';
 import { SupplierService } from '../suppliers/supplier.service';
@@ -51,9 +51,27 @@ export class ProductService {
     )
   );
 
-  constructor(private http: HttpClient,
-    private supplierService: SupplierService,
-    private productCategory: ProductCategoryService) { }
+  private productSelectedSubject = new BehaviorSubject<number>(0);
+  productSelectedAction$ = this.productSelectedSubject.asObservable();
+
+  selectedProduct$ = combineLatest([
+    this.productWithCategory$,
+    this.productSelectedAction$
+  ]).pipe(
+    map(([products, selectedProductId]) =>
+      products.find(product => product.id === selectedProductId)
+    ),
+    tap(product => console.log('selected product', product))
+  );
+
+  constructor(
+    private http: HttpClient,
+    private productCategory: ProductCategoryService
+  ) { }
+
+  selectedProductChange(selectedProductId: number): void {
+    this.productSelectedSubject.next(selectedProductId);
+  }
 
   private handleError(err: any): Observable<never> {
     // in a real world app, we may send the server to some remote logging infrastructure

@@ -15,17 +15,19 @@ export class ProductListAltComponent {
   errorMessage = '';
   selectedProductId: number;
 
-  products$ = this.productService.products$.pipe(
+  products$ = this.productService.productWithCategory$.pipe(
     catchError(err => {
       this.errorMessage = err;
       return EMPTY;
     })
-  )
+  );
+
+  selectedProduct$ = this.productService.selectedProduct$;
   sub: Subscription;
 
   constructor(private productService: ProductService) { }
 
   onSelected(productId: number): void {
-    console.log('Not yet implemented');
+    this.productService.selectedProductChange(productId);
   }
 }
