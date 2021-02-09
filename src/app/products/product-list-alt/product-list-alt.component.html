@@ -16,8 +16,7 @@
     </div>
   </div>
 </div>
-
 <div class="alert alert-danger"
-     *ngIf="errorMessage">
+     *ngIf="errorMessage$ | async as errorMessage">
   {{errorMessage}}
 </div>

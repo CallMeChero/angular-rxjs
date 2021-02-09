@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
-import { EMPTY, Subscription } from 'rxjs';
+import { EMPTY, Subject, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { Product } from '../product';
@@ -12,12 +12,13 @@ import { ProductService } from '../product.service';
 })
 export class ProductListAltComponent {
   pageTitle = 'Products';
-  errorMessage = '';
-  selectedProductId: number;
+
+  private errorMessageSubject = new Subject<string>();
+  errorMessage$ = this.errorMessageSubject.asObservable();
 
   products$ = this.productService.productWithCategory$.pipe(
     catchError(err => {
-      this.errorMessage = err;
+      this.errorMessageSubject.next(err);
       return EMPTY;
     })
   );
