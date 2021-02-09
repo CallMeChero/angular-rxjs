@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, combineLatest, Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, merge, Observable, Subject, throwError } from 'rxjs';
+import { catchError, map, scan, tap } from 'rxjs/operators';
 import { Product } from './product';
 import { ProductCategoryService } from '../product-categories/product-category.service'
 
@@ -14,17 +14,6 @@ export class ProductService {
   products$ = this.http.get<Product[]>(this.productsUrl)
     .pipe(
       map(products =>
-        // products.map( product => ({
-        //   id: product.id,
-        //   productName: product.productName,
-        //   productCode: product.productCode,
-        //   description: product.description,
-        //   price: product.price * 1.5,
-        //   categoryId: product.categoryId,
-        //   quantityInStock: product.quantityInStock,
-        //   searchKey: [product.productName],
-        //   supplierIds: product.supplierIds
-        // }) as Product)
         products.map(product => ({
           ...product,
           price: product.price + 1.5,
@@ -62,6 +51,17 @@ export class ProductService {
     tap(product => console.log('selected product', product))
   );
 
+  private productInsertedSubject = new Subject<Product>();
+  productInsertedAction$ = this.productInsertedSubject.asObservable();
+
+  productsWithAdd$ = merge(
+    this.productWithCategory$,
+    this.productInsertedAction$
+  ).pipe(
+    scan((acc: Product[], value: Product) => [...acc, value]),
+    tap(products => console.log(products))
+  )
+
   constructor(
     private http: HttpClient,
     private productCategory: ProductCategoryService
@@ -69,6 +69,24 @@ export class ProductService {
 
   selectedProductChange(selectedProductId: number): void {
     this.productSelectedSubject.next(selectedProductId);
+  }
+
+  addProduct(newProduct?: Product): void {
+    newProduct = newProduct || this.fakeProduct();
+    this.productInsertedSubject.next(newProduct);
+  }
+
+  fakeProduct(): Product {
+    return {
+      id: 42,
+      productName: 'New One',
+      productCode: 'XXX-XXX',
+      description: 'Newly created product',
+      price: 8.9,
+      categoryId: 3,
+      quantityInStock: 0,
+      category: 'Toolbox'
+    }
   }
 
   private handleError(err: any): Observable<never> {
