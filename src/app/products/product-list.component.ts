@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { BehaviorSubject, combineLatest, EMPTY, Subject } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, timestamp } from 'rxjs/operators';
 import { ProductCategoryService } from '../product-categories/product-category.service';
 import { ProductService } from './product.service';
 
@@ -14,6 +14,7 @@ export class ProductListComponent {
 
   private categorySelectedSubject = new BehaviorSubject<number>(0);
   categorySelectedAction$ = this.categorySelectedSubject.asObservable();
+
   private errorMessageSubject = new Subject<string>();
   errorMessage$ = this.errorMessageSubject.asObservable();
 
@@ -39,9 +40,7 @@ export class ProductListComponent {
   );
 
 
-  constructor(private productService: ProductService, private categoryService: ProductCategoryService) {
-    console.log(this.products$.subscribe(data => console.log("data", data)));
-  }
+  constructor(private productService: ProductService, private categoryService: ProductCategoryService) { }
 
   onAdd(): void {
     this.productService.addProduct();

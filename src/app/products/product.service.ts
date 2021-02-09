@@ -47,8 +47,7 @@ export class ProductService {
   ]).pipe(
     map(([products, selectedProductId]) =>
       products.find(product => product.id === selectedProductId)
-    ),
-    tap(product => console.log('selected product', product))
+    )
   );
 
   private productInsertedSubject = new Subject<Product>();
@@ -59,7 +58,6 @@ export class ProductService {
     this.productInsertedAction$
   ).pipe(
     scan((acc: Product[], value: Product) => [...acc, value]),
-    tap(products => console.log(products))
   )
 
   constructor(
